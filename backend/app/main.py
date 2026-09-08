@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 app = FastAPI(title="API Comparador de Preços")
 
+
 @app.get("/")
 def home():
     return {
