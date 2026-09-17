@@ -1,26 +1,42 @@
-from fastapi import FastAPI, HTTPException
+# ==============================================================================
+# PROJETO INTEGRADOR II (UNIVESP) - PLATAFORMA DE ADOÇÃO DE ANIMAIS (ONG)
+# Arquivo: backend/app/main.py
+# Descrição: API RESTful construída com FastAPI e SQLAlchemy ORM
+# ==============================================================================
+
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List
+from sqlalchemy.orm import Session
 import requests
 
-# Inicialização da aplicação FastAPI
+# Importação dos módulos locais de banco de dados e modelos
+from .database import engine, Base, get_db
+from . import models
+
+# Cria todas as tabelas mapeadas no models.py automaticamente no banco SQLite/PostgreSQL
+models.Base.metadata.create_all(bind=engine)
+
+# Inicialização e configuração principal da aplicação FastAPI
 app = FastAPI(
     title="Plataforma de Adoção de Animais - ONG Parceira",
-    description="API para gestão de pets e formulários de adoção (PI2 - Univesp)",
+    description="API RESTful para gestão de pets resgatados e formulários de adoção (PI2 - Univesp)",
     version="2.0.0"
 )
 
-# --- MODELOS DE DADOS (Pydantic / Schemas temporários para validação) ---
+# ==============================================================================
+# SCHEMAS PYDANTIC (Validação de Dados de Entrada/Saída)
+# ==============================================================================
 
 class AnimalBase(BaseModel):
     nome: str
     especie: str            # Ex: Cão, Gato
     porte: str              # Ex: Pequeno, Médio, Grande
-    idade_aproximada: str
+    idade_aproximada: Optional[str] = None
     castrado: bool = False
     vacinado: bool = False
     descricao: Optional[str] = None
-    foto_url: Optional[str] = None  # Corrigido: adicionado o ':' que faltava
+    foto_url: Optional[str] = None
 
 class AdotanteForm(BaseModel):
     nome: str
@@ -29,48 +45,16 @@ class AdotanteForm(BaseModel):
     cep: str
     animal_id: int
 
-# --- SIMULAÇÃO DE BANCO DE DADOS EM MEMÓRIA (Até conectar com o PostgreSQL) ---
-
-ONG_DADOS = {
-    "nome": "Ong Proteção e Amor Animal",
-    "endereco": "Rua dos Resgatados, 123 - São Paulo, SP",  # Recomendado usar 'endereco' sem acento para evitar incompatibilidades de chave
-    "telefone": "(11) 99999-8888",
-    "email": "contato@ongpatinhas.org",
-    "latitude": -23.550520,
-    "longitude": -46.633308
-}
-
-ANIMAIS_DB = [
-    {
-        "id": 1,
-        "nome": "Thor",
-        "especie": "Cão",
-        "porte": "Médio",
-        "idade_aproximada": "2 anos",
-        "castrado": True,
-        "vacinado": True,
-        "status": "disponivel",
-        "foto_url": "https://placekitten.com/300/300"
-    },
-    {
-        "id": 2,
-        "nome": "Mia",
-        "especie": "Gato",
-        "porte": "Pequeno",
-        "idade_aproximada": "6 meses",
-        "castrado": True,
-        "vacinado": True,
-        "status": "disponivel",
-        "foto_url": "https://placekitten.com/301/301"
-    }
-]
-
-SOLICITACOES_DB = []
-
-# --- INTEGRAÇÃO COM API EXTERNA (Bot do Telegram) ---
+# ==============================================================================
+# INTEGRAÇÃO COM BOT DO TELEGRAM (Notificações em Tempo Real)
+# ==============================================================================
 
 def notificar_telegram(nome_adotante: str, telefone: str, nome_pet: str):
-    """Função utilitária para notificar a ONG via Telegram quando houver novo interesse"""
+    """
+    Função utilitária que dispara uma mensagem para o grupo/chat do Telegram da ONG
+    sempre que um novo formulário de interesse de adoção for enviado.
+    """
+    # IMPORTANTE: Substituir futuramente pelas credenciais reais do BotFather
     TOKEN_BOT = "SEU_TELEGRAM_BOT_TOKEN"
     CHAT_ID = "SEU_TELEGRAM_CHAT_ID"
 
@@ -79,7 +63,7 @@ def notificar_telegram(nome_adotante: str, telefone: str, nome_pet: str):
         f"👤 *Adotante:* {nome_adotante}\n"
         f"📞 *Telefone:* {telefone}\n"
         f"🐶 *Pet de Interesse:* {nome_pet}\n\n"
-        f"_Verifique o painel para mais detalhes._"
+        f"_Verifique o painel administrativo para mais detalhes._"
     )
 
     url = f"https://api.telegram.org/bot{TOKEN_BOT}/sendMessage"
@@ -90,11 +74,13 @@ def notificar_telegram(nome_adotante: str, telefone: str, nome_pet: str):
     except Exception as e:
         print(f"[Aviso Telegram] Não foi possível enviar a notificação: {e}")
 
-# --- ENDPOINTS DA API ---
+# ==============================================================================
+# ENDPOINTS / ROTAS DA API
+# ==============================================================================
 
-@app.get("/", tags=["Geral"])  # Corrigido: ajustado parênteses/sintaxe do parâmetro tags
+@app.get("/", tags=["Geral"])
 def home():
-    """Endpoint raiz para verificar a saúde da API"""
+    """Endpoint raiz para verificação rápida do status de funcionamento da API"""
     return {
         "projeto": "Plataforma de Adoção de Animais - PI2 Univesp",
         "status": "Online",
@@ -102,60 +88,101 @@ def home():
     }
 
 @app.get("/ong", tags=["ONG"])
-def obter_dados_ong():
-    """Retorna os dados institucionais e a localização fixa da ONG para exibição no mapa"""
-    return ONG_DADOS
+def obter_dados_ong(db: Session = Depends(get_db)):
+    """
+    Retorna os dados institucionais e localização fixa da ONG cadastrada no banco.
+    Caso o banco esteja vazio, insere o registro inicial automaticamente.
+    """
+    ong = db.query(models.Ong).first()
+    if not ong:
+        # Cadastra uma ONG padrão inicial caso a tabela esteja vazia
+        ong = models.Ong(
+            nome="ONG Proteção e Amor Animal",
+            descricao="Instituição dedicada ao resgate, reabilitação e adoção de pets.",
+            endereco="Rua dos Resgatados, 123 - São Paulo, SP",
+            telefone="(11) 99999-8888",
+            email="contato@ongpatinhas.org",
+            latitude="-23.550520",
+            longitude="-46.633308"
+        )
+        db.add(ong)
+        db.commit()
+        db.refresh(ong)
+    return ong
 
 @app.get("/animais", tags=["Animais"])
-def listar_animais(especie: Optional[str] = None):
-    """Lista todos os animais disponíveis para adoção, com filtro opcional por espécie"""
+def listar_animais(especie: Optional[str] = None, db: Session = Depends(get_db)):
+    """
+    Retorna a lista completa de animais cadastrados no banco de dados.
+    Permite busca filtrada por espécie através do parâmetro query (ex: /animais?especie=Cão).
+    """
+    query = db.query(models.Animal)
     if especie:
-        filtrados = [a for a in ANIMAIS_DB if a["especie"].lower() == especie.lower()]
-        return filtrados
-    return ANIMAIS_DB
+        query = query.filter(models.Animal.especie.ilike(f"%{especie}%"))
+    return query.all()
 
 @app.get("/animais/{animal_id}", tags=["Animais"])
-def obter_animal(animal_id: int):
-    """Retorna os detalhes de um animal específico"""
-    animal = next((a for a in ANIMAIS_DB if a["id"] == animal_id), None)  # Corrigido erro de digitação 'dor' -> 'for'
+def obter_animal(animal_id: int, db: Session = Depends(get_db)):
+    """
+    Busca e retorna os detalhes de um único pet pelo seu ID primário no banco de dados.
+    Corrigido: Método `.query()` (estava `.quey`).
+    """
+    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal não encontrado")
     return animal
 
 @app.post("/animais", tags=["Administração ONG"])
-def cadastrar_animal(animal: AnimalBase):
-    """Rota restrita para a ONG cadastrar novos pets resgatados"""
-    novo_id = len(ANIMAIS_DB) + 1
-    novo_pet = animal.dict()
-    novo_pet["id"] = novo_id
-    novo_pet["status"] = "disponivel"
-
-    ANIMAIS_DB.append(novo_pet)
-    return {"mensagem": "Animal cadastrado com sucesso!", "pet": novo_pet}  # Corrigido aspas em "mensagem"
+def cadastrar_animal(animal: AnimalBase, db: Session = Depends(get_db)):
+    """
+    Endpoint administrativo para cadastrar novos pets resgatados diretamente no banco de dados.
+    Corrigido: Tipagem `db: Session` (estava `db: Sessison`).
+    """
+    novo_pet = models.Animal(**animal.dict())
+    db.add(novo_pet)
+    db.commit()
+    db.refresh(novo_pet)
+    return {"mensagem": "Animal cadastrado com sucesso!", "pet": novo_pet}
 
 @app.post("/solicitacoes", tags=["Adoção"])
-def enviar_solicitacao_adocao(form: AdotanteForm):
-    """Recebe o formulário de interesse de um adotante e dispara o aviso para a ONG"""
-    animal = next((a for a in ANIMAIS_DB if a["id"] == form.animal_id), None)
+def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db)):
+    """
+    Recebe o formulário de adoção do público, busca/cadastra o adotante no banco,
+    vincula a solicitação ao pet selecionado e envia o aviso para o Telegram da ONG.
+    """
+    # 1. Verifica se o pet selecionado existe no banco de dados
+    animal = db.query(models.Animal).filter(models.Animal.id == form.animal_id).first()
     if not animal:
-        raise HTTPException(status_code=404, detail="Animal selecionado não existe")  # Corrigido: HTTException -> HTTPException
+        raise HTTPException(status_code=404, detail="Animal selecionado não existe")
 
-    nova_solicitacao = {
-        "id": len(SOLICITACOES_DB) + 1,
-        "adotante": form.nome,
-        "cpf": form.cpf,
-        "telefone": form.telefone,
-        "cep": form.cep,
-        "animal": animal["nome"],
-        "status": "pendente"  # Corrigido: adicionado os ':' que faltavam
-    }
+    # 2. Busca se o adotante já possui cadastro prévio pelo CPF ou registra um novo
+    adotante = db.query(models.Adotante).filter(models.Adotante.cpf == form.cpf).first()
+    if not adotante:
+        adotante = models.Adotante(
+            nome=form.nome,
+            cpf=form.cpf,
+            telefone=form.telefone,
+            cep=form.cep
+        )
+        db.add(adotante)
+        db.commit()
+        db.refresh(adotante)
 
-    SOLICITACOES_DB.append(nova_solicitacao)
+    # 3. Registra a solicitação de adoção relacionando as chaves estrangeiras
+    nova_solicitacao = models.SolicitacaoAdocao(
+        animal_id=animal.id,
+        adotante_id=adotante.id,
+        status="pendente"
+    )
+    db.add(nova_solicitacao)
+    db.commit()
+    db.refresh(nova_solicitacao)
 
-    # Notifica o grupo da ONG via API do Telegram
-    notificar_telegram(form.nome, form.telefone, animal["nome"])
+    # 4. Dispara a notificação via Bot do Telegram para a equipe da ONG
+    notificar_telegram(form.nome, form.telefone, animal.nome)
 
+    # Corrigido: adicionada a vírgula separadora de chaves no dicionário retornado
     return {
         "mensagem": "Solicitação de adoção enviada com sucesso! A ONG entrará em contato.",
-        "solicitacao_id": nova_solicitacao["id"]
+        "solicitacao_id": nova_solicitacao.id
     }
