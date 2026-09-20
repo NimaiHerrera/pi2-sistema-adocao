@@ -157,3 +157,52 @@ def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db))
         "mensagem": "Solicitação de adoção enviada com sucesso! A ONG entrará em contato.",
         "solicitacao_id": nova_solicitacao.id
     }
+
+@app.get('/solicitacoes', tags=["Administração ONG"])
+def listar_solicitacoes(db: Session = Depends(get_db)):
+    """Retorna todas as solicitações de adoção enviadas com os dados do adotante e do pet"""
+    solicitacoes = db.query(models.SolicitacaoAdoao).all()
+    resultado = []
+
+    for sol in solicitacoes:
+        resultado.append({
+            "id": sol.id,
+            "data_solicitacao": sol.data_solicitacao,
+            "status": sol.status,
+            "adotante": {
+                "id": sol.adotante.id,
+                "nome": sol.adotante.nome,
+                "cpf": sol.adotante.cpf,
+                "telefone": sol.adotante.telefone,
+                "cep": sol.adotante.cep
+            },
+            "animal": {
+                "id": sol.animal.id,
+                "nome": sol.animal.nome,
+                "especie": sol.animal.especie
+            }
+        })
+    return resultado
+
+@app.patch("/solicitacoes/{solicitacao_id}", tags=["Administração ONG"])
+def atualizar_status_solicitacao(solicitacao_id: int, novo_status: str, db: Session = Depends(get_db)):
+    """Atualiza o status de uma solicitação de adoção (ex: 'aprovado' ou 'recusado')"""
+    solicitacao = db.query(models.SolicitacaoAdocao).filter(models.SolicitacaoAdocao.id == solicitacao_id).first()
+    if not solicitacao:
+        raise HTTPException(status_code=404, detail="Solicitação não encontrada")
+    
+    solicitacao.status = novo_status
+    db.commit()
+    db.refresh(solicitacao)
+    return {"mensagem": f"Status atualizado para '{novo_status}' com sucesso!"}
+
+@app.delete("/animais/{animal_id}", tags=["Administração ONG"])
+def remover_animal(animal_id: int, db: Session = Depends(get_db)):
+    """Remove um animal do banco de dados permanentemente"""
+    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
+    if not animal:
+        raise HTTPException(status_code=404, detail="Animal não encontrado")
+    
+    db.delete(animal)
+    db.commit()
+    return {"mensagem": f"Animal '{animal.nome}' removido com sucesso!"}

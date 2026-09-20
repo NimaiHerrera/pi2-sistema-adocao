@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo - ONG Parceira</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    .tabela-admin {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .tabela-admin th, .tabela-admin td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .tabela-admin th { background-color: #0f172a; color: white; }
+    .btn-acao {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-aprovar { background-color: #22c55e; color: white; }
+    .btn-recusar { background-color: #ef4444; color: white; }
+    .btn-remover { background-color: #dc2626; color: white; }
+  </style>
+</head>
+<body>
+
+  <header class="hero-header">
+    <div class="container">
+      <h1>Painel Administrativo da ONG</h1>
+      <p>Gestão de cadastros de pets e análise de formulários de adoção</p>
+      <a href="index.html" style="color: white; font-weight: bold;">← Voltar para a Vitrine</a>
+    </div>
+  </header>
+
+  <main class="container" style="margin-top: 30px;">
+    
+    <!-- SEÇÃO 1: SOLICITAÇÕES RECEBIDAS -->
+    <section>
+      <h2>Solicitações de Adoção Recebidas</h2>
+      <table class="tabela-admin">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Adotante</th>
+            <th>Contato</th>
+            <th>Pet de Interesse</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-solicitacoes">
+          <tr><td colspan="6">Carregando solicitações...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SEÇÃO 2: GESTÃO DE ANIMAIS -->
+    <section style="margin-top: 50px; margin-bottom: 50px;">
+      <h2>Gerenciar Animais Cadastrados</h2>
+      <table class="tabela-admin">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Espécie</th>
+            <th>Porte</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabela-animais-admin">
+          <tr><td colspan="5">Carregando animais...</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

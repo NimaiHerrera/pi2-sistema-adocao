@@ -3,33 +3,121 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adoção de Pets - ONG Parceira</title>
+  <title>Adoção de Pets - ONG Proteção & Amor Animal</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <header>
-    <div class="container">
+  <!-- HERO HEADER INSTITUCIONAL -->
+  <header class="hero-header">
+    <div class="container hero-content">
+      <div class="badge-ong">🐾 Adotar é um ato de amor</div>
       <h1 id="ong-nome">Carregando ONG...</h1>
-      <p id="ong-descricao"></p>
+      <p id="ong-descricao">Carregando informações institucionais...</p>
+      
+      <div class="ong-contatos" id="ong-contatos">
+        <!-- Preenchido via JavaScript -->
+      </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="vitrine-header">
-      <h2>Animais Disponíveis para Adoção</h2>
-      <div class="filtros">
-        <button onclick="carregarAnimais()">Todos</button>
-        <button onclick="carregarAnimais('Cão')">Cães</button>
-        <button onclick="carregarAnimais('Gato')">Gatos</button>
+    
+    <!-- SEÇÃO DE BUSCA E FILTROS -->
+    <section class="controles-vitrine">
+      <div class="titulo-secao">
+        <h2>Conheça os nossos peludinhos</h2>
+        <p>Encontre o seu novo melhor amigo e inicie o processo de adoção responsável</p>
+      </div>
+
+      <div class="barra-ferramentas">
+        <!-- Campo de Pesquisa em Tempo Real -->
+        <div class="campo-busca">
+          <input type="text" id="input-pesquisa" placeholder="🔍 Buscar por nome do pet..." oninput="filtrarPorNome()">
+        </div>
+
+        <!-- Filtros por Categoria -->
+        <div class="filtros-categoria">
+          <button class="btn-filtro active" onclick="filtrarEspecie('', this)">Todos</button>
+          <button class="btn-filtro" onclick="filtrarEspecie('Cão', this)">🐶 Cães</button>
+          <button class="btn-filtro" onclick="filtrarEspecie('Gato', this)">🐱 Gatos</button>
+        </div>
       </div>
     </section>
 
-    <!-- O JavaScript vai preencher os cards dentro dessa div -->
+    <!-- GRELHA DE CARDS DOS ANIMAIS -->
     <section id="lista-animais" class="grid-animais">
-      <p>Carregando pets...</p>
+      <div class="loading-spinner">
+        <p>A procurar pets disponíveis no abrigo...</p>
+      </div>
     </section>
+
+    <!-- FORMULÁRIO DE ADOÇÃO -->
+    <section id="secao-formulario" class="secao-form" style="display: none;">
+      <div class="form-header">
+        <h2>Formulário de Adoção</h2>
+        <p>A demonstrar interesse no pet: <strong id="nome-pet-selecionado"></strong></p>
+      </div>
+      
+      <form id="form-adocao" onsubmit="enviarFormulario(event)">
+        <input type="hidden" id="animal-id">
+
+        <div class="form-grid">
+          <div class="campo">
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" required placeholder="Digite o seu nome completo">
+          </div>
+
+          <div class="campo">
+            <label for="cpf">CPF</label>
+            <input type="text" id="cpf" required placeholder="000.000.000-00">
+          </div>
+
+          <div class="campo">
+            <label for="telefone">Telefone / WhatsApp</label>
+            <input type="text" id="telefone" required placeholder="(11) 99999-9999">
+          </div>
+
+          <!-- Integração ViaCEP -->
+          <div class="campo">
+            <label for="cep">CEP</label>
+            <input type="text" id="cep" maxlength="9" required placeholder="00000-000" onblur="buscarCep(this.value)">
+            <small id="status-cep" class="status-helper"></small>
+          </div>
+
+          <div class="campo campo-full">
+            <label for="logradouro">Rua / Logradouro</label>
+            <input type="text" id="logradouro" readonly placeholder="Preenchimento automático pelo CEP">
+          </div>
+
+          <div class="campo">
+            <label for="bairro">Bairro</label>
+            <input type="text" id="bairro" readonly placeholder="Preenchimento automático pelo CEP">
+          </div>
+
+          <div class="campo">
+            <label for="cidade">Cidade / UF</label>
+            <input type="text" id="cidade" readonly placeholder="Preenchimento automático pelo CEP">
+          </div>
+        </div>
+
+        <div class="form-acoes">
+          <button type="button" class="btn-cancelar" onclick="fecharFormulario()">Cancelar</button>
+          <button type="submit" class="btn-enviar">Enviar Solicitação de Adoção</button>
+        </div>
+      </form>
+    </section>
+
   </main>
+
+  <footer>
+    <div class="container footer-content">
+      <p>© 2026 Plataforma de Adoção de Animais - Projeto Integrador II (Univesp)</p>
+    </div>
+  </footer>
 
   <script src="script.js"></script>
 </body>
