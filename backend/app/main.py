@@ -12,7 +12,7 @@ from . import models
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Plataforma de Adoção de Animais - ONG Parceira",
+    title="Plataforma de Adoção de Animais - Pancinha Feliz da Lili",
     description="API RESTful para gestão de pets resgatados e formulários de adoção (PI2 - Univesp)",
     version="2.0.0"
 )
@@ -74,24 +74,28 @@ def notificar_telegram(nome_adotante: str, telefone: str, nome_pet: str):
 def home():
     """Endpoint raiz para verificar a saúde da API"""
     return {
-        "projeto": "Plataforma de Adoção de Animais - PI2 Univesp",
+        "projeto": "Plataforma de Adoção de Animais - Pancinha Feliz da Lili",
         "status": "Online",
         "versao": "2.0.0"
     }
 
 @app.get("/ong", tags=["ONG"])
 def obter_dados_ong(db: Session = Depends(get_db)):
-    """Retorna os dados institucionais e localização da ONG cadastrada no banco"""
-    ong = db.query(models.Ong).first()
+    """Retorna os dados institucionais da ONG cadastrada no banco"""
+    ong = db.query(models.ONG).first()  # Corrigido: models.ONG
     if not ong:
-        # Se não houver registro no banco, retorna dados padrão de fallback
-        return {
-            "nome": "ONG Proteção e Amor Animal",
-            "descricao": "Resgatamos e cuidamos de animais abandonados.",
-            "endereco": "Rua dos Resgatados, 123 - São Paulo, SP",
-            "telefone": "(11) 99999-8888",
-            "email": "contato@ongpatinhas.org"
-        }
+        ong = models.ONG(
+            nome="Pancinha Feliz da Lili",
+            descricao="Instituição dedicada ao resgate, cuidado e adoção responsável de animais.",
+            endereco="Mauá - SP",
+            telefone="(11) 97319-0676",
+            email="contato@pancinhafelizdalili.org",
+            latitude="-23.550520",
+            longitude="-46.633308"
+        )
+        db.add(ong)
+        db.commit()
+        db.refresh(ong)
     return ong
 
 @app.get("/animais", tags=["Animais"])
@@ -122,12 +126,10 @@ def cadastrar_animal(animal: AnimalBase, db: Session = Depends(get_db)):
 @app.post("/solicitacoes", tags=["Adoção"])
 def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db)):
     """Recebe o formulário de interesse de um adotante e grava a solicitação no banco"""
-    # 1. Verifica se o pet existe
     animal = db.query(models.Animal).filter(models.Animal.id == form.animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal selecionado não existe")
 
-    # 2. Verifica se o adotante já possui cadastro pelo CPF ou cria um novo
     adotante = db.query(models.Adotante).filter(models.Adotante.cpf == form.cpf).first()
     if not adotante:
         adotante = models.Adotante(
@@ -140,7 +142,6 @@ def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db))
         db.commit()
         db.refresh(adotante)
 
-    # 3. Salva a solicitação de adoção no banco
     nova_solicitacao = models.SolicitacaoAdocao(
         animal_id=animal.id,
         adotante_id=adotante.id,
@@ -150,7 +151,6 @@ def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db))
     db.commit()
     db.refresh(nova_solicitacao)
 
-    # 4. Envia o aviso via Telegram
     notificar_telegram(form.nome, form.telefone, animal.nome)
 
     return {
@@ -161,7 +161,7 @@ def enviar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db))
 @app.get('/solicitacoes', tags=["Administração ONG"])
 def listar_solicitacoes(db: Session = Depends(get_db)):
     """Retorna todas as solicitações de adoção enviadas com os dados do adotante e do pet"""
-    solicitacoes = db.query(models.SolicitacaoAdoao).all()
+    solicitacoes = db.query(models.SolicitacaoAdocao).all()  # Corrigido: SolicitacaoAdocao
     resultado = []
 
     for sol in solicitacoes:
