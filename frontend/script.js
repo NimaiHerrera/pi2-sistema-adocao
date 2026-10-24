@@ -19,8 +19,8 @@ async function carregarDadosOng() {
 
     const contatosContainer = document.getElementById("ong-contatos");
     contatosContainer.innerHTML = `
-      <span>📍 ${ong.endereco || 'São Paulo, SP'}</span>
-      <span>📞 ${ong.telefone || '(11) 99999-8888'}</span>
+      <span>📍 ${ong.endereco || 'Mauá - SP'}</span>
+      <span>📞 ${ong.telefone || '(11) 97319-0676'}</span>
     `;
   } catch (error) {
     console.error("Erro ONG:", error);
@@ -48,7 +48,7 @@ async function carregarAnimais(especie = "") {
   }
 }
 
-// Desenha os cards na tela
+// Desenha os cards na tela com o layout e estrutura de imagem corrigida
 function renderizarCards(animais) {
   const container = document.getElementById("lista-animais");
   container.innerHTML = "";
@@ -73,8 +73,8 @@ function renderizarCards(animais) {
         <h3>${animal.nome}</h3>
         
         <div class="tags-saude">
-          ${animal.vacinado ? '<span class="tag tag-vacinado">✓ Vacinado</span>' : ''}
-          ${animal.castrado ? '<span class="tag tag-castrado">✓ Castrado</span>' : ''}
+          ${animal.vacinado ? '<span class="tag vacinado">✓ Vacinado</span>' : ''}
+          ${animal.castrado ? '<span class="tag castrado">✓ Castrado</span>' : ''}
         </div>
 
         <p class="info-linha"><strong>Porte:</strong> ${animal.porte}</p>
