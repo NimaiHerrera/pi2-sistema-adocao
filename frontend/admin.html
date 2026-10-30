@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo - ONG Parceira</title>
+  <title>Painel Administrativo - ONG Pancinha Feliz da Lili</title>
   <link rel="stylesheet" href="style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -14,14 +15,21 @@
       background: white;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
-    .tabela-admin th, .tabela-admin td {
+
+    .tabela-admin th,
+    .tabela-admin td {
       padding: 12px 15px;
       text-align: left;
       border-bottom: 1px solid #e2e8f0;
     }
-    .tabela-admin th { background-color: #0f172a; color: white; }
+
+    .tabela-admin th {
+      background-color: #0f172a;
+      color: white;
+    }
+
     .btn-acao {
       padding: 6px 12px;
       border: none;
@@ -29,26 +37,151 @@
       cursor: pointer;
       font-weight: bold;
     }
-    .btn-aprovar { background-color: #22c55e; color: white; }
-    .btn-recusar { background-color: #ef4444; color: white; }
-    .btn-remover { background-color: #dc2626; color: white; }
+
+    .btn-aprovar {
+      background-color: #22c55e;
+      color: white;
+    }
+
+    .btn-recusar {
+      background-color: #ef4444;
+      color: white;
+    }
+
+    .btn-remover {
+      background-color: #dc2626;
+      color: white;
+    }
+
+    /* Estilos do Formulário de Cadastro */
+    .form-admin-card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-grid-admin {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .form-grid-admin input,
+    .form-grid-admin select,
+    .form-grid-admin textarea {
+      width: 100%;
+      padding: 8px 12px;
+      margin-top: 4px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
+
 <body>
 
   <header class="hero-header">
     <div class="container">
-      <h1>Painel Administrativo da ONG</h1>
-      <p>Gestão de cadastros de pets e análise de formulários de adoção</p>
-      <a href="index.html" style="color: white; font-weight: bold;">← Voltar para a Vitrine</a>
+      <h1>⚙️ Painel Administrativo da ONG</h1>
+      <p>Gestão de anúncios de pets e análise de solicitações de adoção</p>
+      <a href="index.html" style="color: white; font-weight: bold; text-decoration: underline;">← Voltar para a Vitrine
+        Pública</a>
     </div>
   </header>
 
   <main class="container" style="margin-top: 30px;">
-    
-    <!-- SEÇÃO 1: SOLICITAÇÕES RECEBIDAS -->
+
+    <!-- SEÇÃO 1: CADASTRO DE NOVO ANÚNCIO DE PET -->
+    <section class="form-admin-card">
+      <h2>➕ Cadastrar Novo Pet para Adoção</h2>
+      <p style="color: #64748b; font-size: 0.9rem;">Preencha as informações para publicar o anúncio imediatamente na
+        vitrine pública.</p>
+
+      <form id="form-cadastrar-pet" onsubmit="cadastrarNovoPet(event)" class="form-grid-admin">
+        <div>
+          <label><strong>Nome do Pet:</strong></label>
+          <input type="text" id="cad-nome" required placeholder="Ex: Mel">
+        </div>
+
+        <div>
+          <label><strong>Espécie:</strong></label>
+          <select id="cad-especie" required>
+            <option value="Cão">🐶 Cão</option>
+            <option value="Gato">🐱 Gato</option>
+          </select>
+        </div>
+
+        <div>
+          <label><strong>Porte:</strong></label>
+          <select id="cad-porte" required>
+            <option value="Pequeno">Pequeno</option>
+            <option value="Médio">Médio</option>
+            <option value="Grande">Grande</option>
+          </select>
+        </div>
+
+        <div>
+          <label><strong>Idade Aproximada:</strong></label>
+          <input type="text" id="cad-idade" placeholder="Ex: 1 ano e 2 meses">
+        </div>
+
+        <!-- UPLOAD DE FOTO COM DETECÇÃO DE ARQUIVO -->
+        <div style="grid-column: span 2;">
+          <label><strong>Foto do Pet (Upload de Arquivo):</strong></label>
+
+          <div style="display: flex; gap: 15px; align-items: center; margin-top: 6px;">
+            <!-- Input de arquivo com o evento onchange ativado -->
+            <input type="file" id="cad-foto-arquivo" accept="image/*" onchange="previewFoto(event)"
+              style="display: none;">
+
+            <label for="cad-foto-arquivo"
+              style="background: #0284c7; color: white; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; margin: 0;">
+              📷 Escolher Imagem do Computador
+            </label>
+
+            <span id="nome-arquivo-selecionado" style="color: #64748b; font-size: 0.85rem;">Nenhum arquivo
+              selecionado</span>
+          </div>
+
+          <!-- Pré-visualização da Imagem -->
+          <div id="container-preview" style="display: none; margin-top: 12px;">
+            <img id="img-preview" src="" alt="Pré-visualização"
+              style="max-width: 180px; max-height: 180px; border-radius: 8px; border: 2px solid #cbd5e1; object-fit: cover;">
+          </div>
+
+          <!-- Campo oculto para guardar a imagem -->
+          <input type="hidden" id="cad-foto-base64">
+        </div>
+
+        <div style="grid-column: span 2;">
+          <label><strong>História / Descrição:</strong></label>
+          <textarea id="cad-descricao" rows="3"
+            placeholder="Conte um pouco sobre o temperamento e o resgate do pet..."></textarea>
+        </div>
+
+        <div style="grid-column: span 2; display: flex; gap: 25px; margin-top: 10px;">
+          <label style="cursor: pointer;"><input type="checkbox" id="cad-vacinado"> 💉 Vacinado</label>
+          <label style="cursor: pointer;"><input type="checkbox" id="cad-castrado"> ✂️ Castrado</label>
+        </div>
+
+        <!-- Botão de envio posicionado DENTRO do formulário -->
+        <div style="grid-column: span 2; margin-top: 10px;">
+          <button type="submit"
+            style="background: #10b981; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1rem;">
+            🐾 Cadastrar Pet na Vitrine
+          </button>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- SEÇÃO 2: SOLICITAÇÕES RECEBIDAS -->
     <section>
-      <h2>Solicitações de Adoção Recebidas</h2>
+      <h2>📩 Solicitações de Adoção Recebidas</h2>
       <table class="tabela-admin">
         <thead>
           <tr>
@@ -61,14 +194,16 @@
           </tr>
         </thead>
         <tbody id="tabela-solicitacoes">
-          <tr><td colspan="6">Carregando solicitações...</td></tr>
+          <tr>
+            <td colspan="6">Carregando solicitações...</td>
+          </tr>
         </tbody>
       </table>
     </section>
 
-    <!-- SEÇÃO 2: GESTÃO DE ANIMAIS -->
+    <!-- SEÇÃO 3: GESTÃO DE ANIMAIS CADASTRADOS -->
     <section style="margin-top: 50px; margin-bottom: 50px;">
-      <h2>Gerenciar Animais Cadastrados</h2>
+      <h2>🐾 Gerenciar Animais Cadastrados</h2>
       <table class="tabela-admin">
         <thead>
           <tr>
@@ -80,7 +215,9 @@
           </tr>
         </thead>
         <tbody id="tabela-animais-admin">
-          <tr><td colspan="5">Carregando animais...</td></tr>
+          <tr>
+            <td colspan="5">Carregando animais...</td>
+          </tr>
         </tbody>
       </table>
     </section>
@@ -89,4 +226,5 @@
 
   <script src="admin.js"></script>
 </body>
+
 </html>

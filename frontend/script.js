@@ -1,5 +1,5 @@
 const API_URL = "http://127.0.0.1:8001";
-let listaAnimaisGlobal = []; // Guarda a lista completa para pesquisas rápidas
+let listaAnimaisGlobal = [];
 let especieFiltroAtual = "";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -7,31 +7,38 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarAnimais();
 });
 
-// Busca os dados da ONG no back-end
+// 1. Busca os dados da ONG no back-end
 async function carregarDadosOng() {
   try {
     const response = await fetch(`${API_URL}/ong`);
     if (!response.ok) throw new Error("Erro ao carregar dados da ONG");
     const ong = await response.json();
 
-    document.getElementById("ong-nome").textContent = ong.nome;
-    document.getElementById("ong-descricao").textContent = ong.descricao;
-
+    const elNome = document.getElementById("ong-nome");
+    const elDesc = document.getElementById("ong-descricao");
     const contatosContainer = document.getElementById("ong-contatos");
-    contatosContainer.innerHTML = `
-      <span>📍 ${ong.endereco || 'Mauá - SP'}</span>
-      <span>📞 ${ong.telefone || '(11) 97319-0676'}</span>
-    `;
+
+    if (elNome) elNome.textContent = ong.nome || "ONG Pancinha Feliz da Lili";
+    if (elDesc) elDesc.textContent = ong.descricao || "Adoção responsável de pets";
+
+    if (contatosContainer) {
+      contatosContainer.innerHTML = `
+        <span>📍 ${ong.endereco || 'Mauá - SP'}</span>
+        <span>📞 ${ong.telefone || '(11) 97319-0676'}</span>
+      `;
+    }
   } catch (error) {
     console.error("Erro ONG:", error);
   }
 }
 
-// Busca os animais na API FastAPI
+// 2. Busca os animais na API FastAPI
 async function carregarAnimais(especie = "") {
   especieFiltroAtual = especie;
   const container = document.getElementById("lista-animais");
-  container.innerHTML = `<div class="loading-spinner"><p>A carregar os nossos amiguinhos...</p></div>`;
+  if (!container) return;
+
+  container.innerHTML = `<div class="loading-spinner"><p>A procurar pets disponíveis no abrigo...</p></div>`;
 
   try {
     let url = `${API_URL}/animais`;
@@ -44,17 +51,19 @@ async function carregarAnimais(especie = "") {
     renderizarCards(listaAnimaisGlobal);
   } catch (error) {
     console.error("Erro Animais:", error);
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #ef4444;">Não foi possível carregar os animais. Verifique se o backend está ligado na porta 8001!</p>`;
+    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 30px 0;">Não foi possível carregar os animais. Verifique se o backend está ativo na porta 8001!</p>`;
   }
 }
 
-// Desenha os cards na tela com o layout e estrutura de imagem corrigida
+// 3. Desenha os cards na tela
 function renderizarCards(animais) {
   const container = document.getElementById("lista-animais");
+  if (!container) return;
+
   container.innerHTML = "";
 
-  if (animais.length === 0) {
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px 0;">Nenhum pet encontrado com os filtros selecionados.</p>`;
+  if (!animais || animais.length === 0) {
+    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px 0;">Nenhum pet encontrado no abrigo com os filtros selecionados.</p>`;
     return;
   }
 
@@ -90,9 +99,12 @@ function renderizarCards(animais) {
   });
 }
 
-// Filtro instantâneo pelo campo de texto
+// 4. Filtro por nome
 function filtrarPorNome() {
-  const termo = document.getElementById("input-pesquisa").value.toLowerCase();
+  const input = document.getElementById("input-pesquisa");
+  if (!input) return;
+
+  const termo = input.value.toLowerCase();
   const filtrados = listaAnimaisGlobal.filter(a => 
     a.nome.toLowerCase().includes(termo) || 
     a.porte.toLowerCase().includes(termo)
@@ -100,62 +112,77 @@ function filtrarPorNome() {
   renderizarCards(filtrados);
 }
 
-// Alternar botões de filtro por espécie
+// 5. Filtro por botões de espécie
 function filtrarEspecie(especie, elementoBotao) {
   document.querySelectorAll(".btn-filtro").forEach(btn => btn.classList.remove("active"));
-  elementoBotao.classList.add("active");
+  if (elementoBotao) elementoBotao.classList.add("active");
   carregarAnimais(especie);
 }
 
-// Abre formulário e faz scroll suave
+// 6. Seleção do pet e abertura do formulário
 function selecionarPet(id, nome) {
-  document.getElementById("secao-formulario").style.display = "block";
-  document.getElementById("nome-pet-selecionado").textContent = nome;
-  document.getElementById("animal-id").value = id;
-  document.getElementById("secao-formulario").scrollIntoView({ behavior: 'smooth' });
+  const secaoForm = document.getElementById("secao-formulario");
+  if (secaoForm) {
+    secaoForm.style.display = "block";
+    document.getElementById("nome-pet-selecionado").textContent = nome;
+    document.getElementById("animal-id").value = id;
+    secaoForm.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 function fecharFormulario() {
-  document.getElementById("secao-formulario").style.display = "none";
-  document.getElementById("form-adocao").reset();
+  const secaoForm = document.getElementById("secao-formulario");
+  if (secaoForm) secaoForm.style.display = "none";
+  const form = document.getElementById("form-adocao");
+  if (form) form.reset();
 }
 
-// Consulta ViaCEP
+// 7. Consulta de CEP via ViaCEP
 async function buscarCep(cep) {
   const cepLimpo = cep.replace(/\D/g, '');
   const statusCep = document.getElementById("status-cep");
 
   if (cepLimpo.length !== 8) {
-    statusCep.textContent = "Digite um CEP válido com 8 dígitos.";
-    statusCep.style.color = "#ef4444";
+    if (statusCep) {
+      statusCep.textContent = "Digite um CEP válido com 8 dígitos.";
+      statusCep.style.color = "#ef4444";
+    }
     return;
   }
 
-  statusCep.textContent = "A procurar endereço...";
-  statusCep.style.color = "#0284c7";
+  if (statusCep) {
+    statusCep.textContent = "A procurar endereço...";
+    statusCep.style.color = "#0284c7";
+  }
 
   try {
     const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
     const data = await response.json();
 
     if (data.erro) {
-      statusCep.textContent = "CEP não encontrado!";
-      statusCep.style.color = "#ef4444";
+      if (statusCep) {
+        statusCep.textContent = "CEP não encontrado!";
+        statusCep.style.color = "#ef4444";
+      }
     } else {
-      statusCep.textContent = "Endereço localizado!";
-      statusCep.style.color = "#166534";
+      if (statusCep) {
+        statusCep.textContent = "Endereço localizado!";
+        statusCep.style.color = "#166534";
+      }
       document.getElementById("logradouro").value = data.logradouro;
       document.getElementById("bairro").value = data.bairro;
       document.getElementById("cidade").value = `${data.localidade} - ${data.uf}`;
     }
   } catch (error) {
     console.error("Erro ViaCEP:", error);
-    statusCep.textContent = "Erro ao ligar ao serviço de CEP.";
-    statusCep.style.color = "#ef4444";
+    if (statusCep) {
+      statusCep.textContent = "Erro ao ligar ao serviço de CEP.";
+      statusCep.style.color = "#ef4444";
+    }
   }
 }
 
-// Envio da Solicitação (POST /solicitacoes)
+// 8. Envio da Solicitação
 async function enviarFormulario(event) {
   event.preventDefault();
 
@@ -174,13 +201,47 @@ async function enviarFormulario(event) {
       body: JSON.stringify(dadosFormulario)
     });
 
-    if (!response.ok) throw new Error("Erro ao enviar solicitação");
-    const resultado = await response.json();
+    if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
 
-    alert(resultado.mensagem);
+    const resultado = await response.json();
+    alert(resultado.mensagem || "Solicitação enviada com sucesso!");
     fecharFormulario();
+
   } catch (error) {
     console.error("Erro no envio:", error);
-    alert("Não foi possível enviar a solicitação. Tente novamente.");
+    alert("Não foi possível enviar a solicitação. Verifique se o backend está ativo!");
   }
+}
+
+/* --- FUNÇÕES DO MODAL PIX --- */
+function abrirModalPix() {
+  const modal = document.getElementById("modal-pix");
+  if (modal) modal.style.display = "flex";
+}
+
+function fecharModalPix() {
+  const modal = document.getElementById("modal-pix");
+  if (modal) modal.style.display = "none";
+  const status = document.getElementById("status-copia");
+  if (status) status.style.display = "none";
+}
+
+function copiarChavePix() {
+  const inputChave = document.getElementById("chave-pix-input");
+  if (!inputChave) return;
+
+  inputChave.select();
+  inputChave.setSelectionRange(0, 99999);
+
+  navigator.clipboard.writeText(inputChave.value).then(() => {
+    const status = document.getElementById("status-copia");
+    if (status) {
+      status.style.display = "block";
+      setTimeout(() => {
+        status.style.display = "none";
+      }, 3000);
+    }
+  }).catch(err => {
+    console.error("Erro ao copiar:", err);
+  });
 }

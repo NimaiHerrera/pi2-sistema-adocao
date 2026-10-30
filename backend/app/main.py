@@ -100,8 +100,10 @@ def obter_dados_ong(db: Session = Depends(get_db)):
 
 @app.get("/animais", tags=["Animais"])
 def listar_animais(especie: Optional[str] = None, db: Session = Depends(get_db)):
-    """Lista todos os animais do banco de dados, com filtro opcional por espécie"""
-    query = db.query(models.Animal)
+    """Lista apenas os animais DISPONÍVEIS no banco de dados"""
+    # Adicionado o filtro de status "disponivel"
+    query = db.query(models.Animal).filter(models.Animal.status == "disponivel")
+    
     if especie:
         query = query.filter(models.Animal.especie.ilike(f"%{especie}%"))
     return query.all()
@@ -184,14 +186,22 @@ def listar_solicitacoes(db: Session = Depends(get_db)):
         })
     return resultado
 
+# COMO VAI FICAR
 @app.patch("/solicitacoes/{solicitacao_id}", tags=["Administração ONG"])
 def atualizar_status_solicitacao(solicitacao_id: int, novo_status: str, db: Session = Depends(get_db)):
-    """Atualiza o status de uma solicitação de adoção (ex: 'aprovado' ou 'recusado')"""
+    """Atualiza a solicitação e, se aprovada, marca o pet como 'adotado'"""
     solicitacao = db.query(models.SolicitacaoAdocao).filter(models.SolicitacaoAdocao.id == solicitacao_id).first()
     if not solicitacao:
         raise HTTPException(status_code=404, detail="Solicitação não encontrada")
     
     solicitacao.status = novo_status
+    
+    # SE FOR APROVADO: atualiza o pet para "adotado"
+    if novo_status.lower() == "aprovado":
+        animal = db.query(models.Animal).filter(models.Animal.id == solicitacao.animal_id).first()
+        if animal:
+            animal.status = "adotado"
+            
     db.commit()
     db.refresh(solicitacao)
     return {"mensagem": f"Status atualizado para '{novo_status}' com sucesso!"}
