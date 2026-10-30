@@ -1,17 +1,24 @@
+/**
+ * Lógica do Front-end Público - Vitrine de Adoção e Formulário
+ * Projeto Integrador II - Univesp
+ */
+
 const API_URL = "http://127.0.0.1:8001";
 let listaAnimaisGlobal = [];
-let especieFiltroAtual = "";
 
 document.addEventListener("DOMContentLoaded", () => {
   carregarDadosOng();
   carregarAnimais();
 });
 
-// 1. Busca os dados da ONG no back-end
+/**
+ * 1. Busca os dados institucionais da ONG parceira
+ */
 async function carregarDadosOng() {
   try {
     const response = await fetch(`${API_URL}/ong`);
     if (!response.ok) throw new Error("Erro ao carregar dados da ONG");
+
     const ong = await response.json();
 
     const elNome = document.getElementById("ong-nome");
@@ -28,13 +35,14 @@ async function carregarDadosOng() {
       `;
     }
   } catch (error) {
-    console.error("Erro ONG:", error);
+    console.error("Erro ao carregar dados institucionais:", error);
   }
 }
 
-// 2. Busca os animais na API FastAPI
+/**
+ * 2. Busca a lista de animais disponíveis no servidor FastAPI
+ */
 async function carregarAnimais(especie = "") {
-  especieFiltroAtual = especie;
   const container = document.getElementById("lista-animais");
   if (!container) return;
 
@@ -46,16 +54,21 @@ async function carregarAnimais(especie = "") {
 
     const response = await fetch(url);
     if (!response.ok) throw new Error("Erro ao listar animais");
-    
+
     listaAnimaisGlobal = await response.json();
     renderizarCards(listaAnimaisGlobal);
   } catch (error) {
-    console.error("Erro Animais:", error);
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 30px 0;">Não foi possível carregar os animais. Verifique se o backend está ativo na porta 8001!</p>`;
+    console.error("Erro na busca de animais:", error);
+    container.innerHTML = `
+      <p style="grid-column: 1/-1; text-align: center; color: #ef4444; padding: 30px 0;">
+        Não foi possível carregar os animais. Verifique se o servidor backend está ativo na porta 8001.
+      </p>`;
   }
 }
 
-// 3. Desenha os cards na tela
+/**
+ * 3. Renderiza os cards dos pets na vitrine pública
+ */
 function renderizarCards(animais) {
   const container = document.getElementById("lista-animais");
   if (!container) return;
@@ -63,7 +76,10 @@ function renderizarCards(animais) {
   container.innerHTML = "";
 
   if (!animais || animais.length === 0) {
-    container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px 0;">Nenhum pet encontrado no abrigo com os filtros selecionados.</p>`;
+    container.innerHTML = `
+      <p style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px 0;">
+        Nenhum pet encontrado com os filtros selecionados.
+      </p>`;
     return;
   }
 
@@ -99,27 +115,33 @@ function renderizarCards(animais) {
   });
 }
 
-// 4. Filtro por nome
+/**
+ * 4. Filtro de pesquisa dinâmica em tempo real
+ */
 function filtrarPorNome() {
   const input = document.getElementById("input-pesquisa");
   if (!input) return;
 
   const termo = input.value.toLowerCase();
-  const filtrados = listaAnimaisGlobal.filter(a => 
-    a.nome.toLowerCase().includes(termo) || 
+  const filtrados = listaAnimaisGlobal.filter(a =>
+    a.nome.toLowerCase().includes(termo) ||
     a.porte.toLowerCase().includes(termo)
   );
   renderizarCards(filtrados);
 }
 
-// 5. Filtro por botões de espécie
+/**
+ * 5. Filtro por categoria / espécie (Cão ou Gato)
+ */
 function filtrarEspecie(especie, elementoBotao) {
   document.querySelectorAll(".btn-filtro").forEach(btn => btn.classList.remove("active"));
   if (elementoBotao) elementoBotao.classList.add("active");
   carregarAnimais(especie);
 }
 
-// 6. Seleção do pet e abertura do formulário
+/**
+ * 6. Seleção de um pet e abertura do formulário de adoção
+ */
 function selecionarPet(id, nome) {
   const secaoForm = document.getElementById("secao-formulario");
   if (secaoForm) {
@@ -137,7 +159,9 @@ function fecharFormulario() {
   if (form) form.reset();
 }
 
-// 7. Consulta de CEP via ViaCEP
+/**
+ * 7. Preenchimento automático do endereço via API ViaCEP ao digitar o CEP
+ */
 async function buscarCep(cep) {
   const cepLimpo = cep.replace(/\D/g, '');
   const statusCep = document.getElementById("status-cep");
@@ -151,7 +175,7 @@ async function buscarCep(cep) {
   }
 
   if (statusCep) {
-    statusCep.textContent = "A procurar endereço...";
+    statusCep.textContent = "Buscando endereço...";
     statusCep.style.color = "#0284c7";
   }
 
@@ -169,20 +193,22 @@ async function buscarCep(cep) {
         statusCep.textContent = "Endereço localizado!";
         statusCep.style.color = "#166534";
       }
-      document.getElementById("logradouro").value = data.logradouro;
-      document.getElementById("bairro").value = data.bairro;
+      document.getElementById("logradouro").value = data.logradouro || "";
+      document.getElementById("bairro").value = data.bairro || "";
       document.getElementById("cidade").value = `${data.localidade} - ${data.uf}`;
     }
   } catch (error) {
-    console.error("Erro ViaCEP:", error);
+    console.error("Erro na consulta do ViaCEP:", error);
     if (statusCep) {
-      statusCep.textContent = "Erro ao ligar ao serviço de CEP.";
+      statusCep.textContent = "Erro ao conectar ao serviço de CEP.";
       statusCep.style.color = "#ef4444";
     }
   }
 }
 
-// 8. Envio da Solicitação
+/**
+ * 8. Envio do formulário de solicitação de adoção para a API
+ */
 async function enviarFormulario(event) {
   event.preventDefault();
 
@@ -201,19 +227,21 @@ async function enviarFormulario(event) {
       body: JSON.stringify(dadosFormulario)
     });
 
-    if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`Erro na requisição: HTTP ${response.status}`);
 
     const resultado = await response.json();
     alert(resultado.mensagem || "Solicitação enviada com sucesso!");
     fecharFormulario();
 
   } catch (error) {
-    console.error("Erro no envio:", error);
-    alert("Não foi possível enviar a solicitação. Verifique se o backend está ativo!");
+    console.error("Erro no envio do formulário:", error);
+    alert("Não foi possível enviar a solicitação. Verifique se o backend está ativo.");
   }
 }
 
-/* --- FUNÇÕES DO MODAL PIX --- */
+/**
+ * 9. Manipulação do Modal de Apoio/Doação via Pix
+ */
 function abrirModalPix() {
   const modal = document.getElementById("modal-pix");
   if (modal) modal.style.display = "flex";
@@ -242,6 +270,6 @@ function copiarChavePix() {
       }, 3000);
     }
   }).catch(err => {
-    console.error("Erro ao copiar:", err);
+    console.error("Erro ao copiar chave Pix:", err);
   });
 }

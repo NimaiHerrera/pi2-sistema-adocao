@@ -1,9 +1,18 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, ForeignKey, DateTime
+"""
+Modelos ORM / Mapeamento de Tabelas do Banco de Dados
+Projeto Integrador II - Univesp
+"""
+
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from .database import Base
 
+
 class ONG(Base):
+    """Tabela para armazenamento dos dados institucionais da ONG parceira."""
+
     __tablename__ = "ong"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -15,7 +24,10 @@ class ONG(Base):
     latitude = Column(String(50), nullable=True)
     longitude = Column(String(50), nullable=True)
 
+
 class Animal(Base):
+    """Tabela para cadastro dos pets resgatados e disponíveis para adoção."""
+
     __tablename__ = "animais"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -25,14 +37,17 @@ class Animal(Base):
     idade_aproximada = Column(String(30), nullable=True)
     castrado = Column(Boolean, default=False)
     vacinado = Column(Boolean, default=False)
-    status = Column(String(20), default="disponivel")  # disponivel / adotado
+    status = Column(String(20), default="disponivel")  # Status: disponivel / adotado
     descricao = Column(Text, nullable=True)
     foto_url = Column(String(255), nullable=True)
 
-    # Relacionamento com as solicitações
+    # Relacionamento com as solicitações de adoção (exclusão em cascata)
     solicitacoes = relationship("SolicitacaoAdocao", back_populates="animal", cascade="all, delete-orphan")
 
+
 class Adotante(Base):
+    """Tabela de cadastro dos cidadãos interessados em adotar."""
+
     __tablename__ = "adotantes"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -44,18 +59,21 @@ class Adotante(Base):
     bairro = Column(String(100), nullable=True)
     cidade = Column(String(100), nullable=True)
 
-    # Relacionamento com as solicitações
+    # Relacionamento com as solicitações de adoção (exclusão em cascata)
     solicitacoes = relationship("SolicitacaoAdocao", back_populates="adotante", cascade="all, delete-orphan")
 
+
 class SolicitacaoAdocao(Base):
+    """Tabela intermediária de ligação entre o Adotante e o Animal selecionado."""
+
     __tablename__ = "solicitacoes_adocao"
 
     id = Column(Integer, primary_key=True, index=True)
     animal_id = Column(Integer, ForeignKey("animais.id", ondelete="CASCADE"), nullable=False)
     adotante_id = Column(Integer, ForeignKey("adotantes.id", ondelete="CASCADE"), nullable=False)
     data_solicitacao = Column(DateTime(timezone=True), server_default=func.now())
-    status = Column(String(20), default="pendente")  # pendente / aprovado / recusado
+    status = Column(String(20), default="pendente")  # Status: pendente / aprovado / recusado
 
-    # Relacionamentos ORM
+    # Mapeamento ORM dos relacionamentos
     animal = relationship("Animal", back_populates="solicitacoes")
     adotante = relationship("Adotante", back_populates="solicitacoes")

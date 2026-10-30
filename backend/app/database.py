@@ -1,24 +1,33 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+"""
+Configuração da Conexão e Sessão com o Banco de Dados (SQLAlchemy)
+Projeto Integrador II - Univesp
+"""
 
-# URL do banco de dados (usaremos SQLite para desenvolvimento local simples)
-# Para mudar para PostgreSQL na nuvem futuramente, basta alterar esta string
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+# URL de conexão com o banco local SQLite
+# Nota: Para migração futura em ambiente de produção (PostgreSQL), basta substituir a string abaixo.
 SQLALCHEMY_DATABASE_URL = "sqlite:///./ong_adocao.db"
 
-# Cria o motor do banco de dados
+# Motor de conexão do SQLAlchemy
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, 
-    connect_args={"check_same_thread": False} # Requerido apenas para o SQLite
+    SQLALCHEMY_DATABASE_URL,
+    connect_args={"check_same_thread": False}  # Necessário para operações assíncronas no SQLite
 )
 
-# Cria a fábrica de sessões do banco de dados
+# Fábrica para geração de sessões do banco de dados
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base para a criação das classes dos modelos no models.py
+# Classe base para criação das tabelas/modelos ORM
 Base = declarative_base()
 
-# Função utilitária (Dependency) para abrir e fechar a sessão do banco em cada requisição
+
 def get_db():
+    """
+    Função utilitária (Dependency Injection) para gerenciar a abertura e o fechamento
+    da sessão com o banco de dados em cada requisição do FastAPI.
+    """
     db = SessionLocal()
     try:
         yield db

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adoção de Pets - ONG Pancinha Feliz da Lili</title>
+  <title>Adoção Responsável - ONG Pancinha Feliz da Lili</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,16 +22,15 @@
         <!-- Preenchido via JavaScript -->
       </div>
 
-      <!-- REDES SOCIAIS E LINKS OFICIAIS DA ONG -->
+      <!-- REDES SOCIAIS E BOTOES DE AÇÃO -->
       <div class="redes-sociais">
-        <a href="https://www.instagram.com/pancinhafelizdalili?stkn=MWo3bXl0aDVxNzl2Ng==" target="_blank" class="btn-rede instagram">
+        <a href="https://www.instagram.com/pancinhafelizdalili?stkn=MWo3bXl0aDVxNzl2Ng==" target="_blank" rel="noopener noreferrer" class="btn-rede instagram">
           📷 Instagram
         </a>
-        <a href="https://www.facebook.com/share/1LyczWvzji/" target="_blank" class="btn-rede facebook">
+        <a href="https://www.facebook.com/share/1LyczWvzji/" target="_blank" rel="noopener noreferrer" class="btn-rede facebook">
           👍 Facebook
         </a>
-        <!-- BOTÃO COM O EVENTO DE CLIQUE DO PIX -->
-        <button onclick="abrirModalPix()" class="btn-rede apoio" style="border: none; cursor: pointer;">
+        <button onclick="abrirModalPix()" class="btn-rede apoio">
           💚 Apoiar ONG (Pix)
         </button>
       </div>
@@ -41,16 +40,16 @@
   <main class="container">
     
     <!-- SEÇÃO DE BUSCA E FILTROS -->
-    <section class="controles-vitrine">
+    <section class="controles-vitrine" aria-label="Filtros da Vitrine">
       <div class="titulo-secao">
-        <h2>Conheça os nossos peludinhos</h2>
+        <h2>Conheça nossos peludinhos</h2>
         <p>Encontre o seu novo melhor amigo e inicie o processo de adoção responsável</p>
       </div>
 
       <div class="barra-ferramentas">
         <!-- Campo de Pesquisa em Tempo Real -->
         <div class="campo-busca">
-          <input type="text" id="input-pesquisa" placeholder="🔍 Buscar por nome do pet..." oninput="filtrarPorNome()">
+          <input type="text" id="input-pesquisa" placeholder="🔍 Buscar por nome do pet..." oninput="filtrarPorNome()" aria-label="Buscar pet por nome">
         </div>
 
         <!-- Filtros por Categoria -->
@@ -63,17 +62,17 @@
     </section>
 
     <!-- GRELHA DE CARDS DOS ANIMAIS -->
-    <section id="lista-animais" class="grid-animais">
+    <section id="lista-animais" class="grid-animais" aria-live="polite">
       <div class="loading-spinner">
         <p>A procurar pets disponíveis no abrigo...</p>
       </div>
     </section>
 
-    <!-- FORMULÁRIO DE ADOÇÃO (INICIALMENTE OCULTO) -->
+    <!-- FORMULÁRIO DE ADOÇÃO (EXIBIÇÃO DINÂMICA) -->
     <section id="secao-formulario" class="secao-form" style="display: none;">
       <div class="form-header">
         <h2>Formulário de Adoção</h2>
-        <p>A demonstrar interesse no pet: <strong id="nome-pet-selecionado"></strong></p>
+        <p>Demonstrando interesse no pet: <strong id="nome-pet-selecionado"></strong></p>
       </div>
       
       <form id="form-adocao" onsubmit="enviarFormulario(event)">
@@ -82,7 +81,7 @@
         <div class="form-grid">
           <div class="campo">
             <label for="nome">Nome Completo</label>
-            <input type="text" id="nome" required placeholder="Digite o seu nome completo">
+            <input type="text" id="nome" required placeholder="Digite seu nome completo">
           </div>
 
           <div class="campo">
@@ -128,23 +127,22 @@
   </main>
 
   <!-- MODAL PIX DE APOIO -->
-  <div id="modal-pix" class="modal-overlay" style="display: none;">
+  <div id="modal-pix" class="modal-overlay" style="display: none;" role="dialog" aria-modal="true">
     <div class="modal-pix-content">
-      <button class="btn-fechar-modal" onclick="fecharModalPix()">✕</button>
+      <button class="btn-fechar-modal" onclick="fecharModalPix()" aria-label="Fechar modal">✕</button>
       
       <h2>💚 Apoie a Pancinha Feliz da Lili</h2>
       <p>Sua contribuição ajuda a manter alimentação, resgates e cuidados veterinários!</p>
 
-      <!-- QR Code Gerado Dinamicamente -->
       <div class="pix-qr-container">
-        <img id="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=11973190676" alt="QR Code Pix">
+        <img id="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=11973190676" alt="QR Code para doação via Pix">
       </div>
 
       <div class="pix-chave-box">
-        <label><strong>Chave Pix (Telefone):</strong></label>
+        <label for="chave-pix-input"><strong>Chave Pix (Telefone):</strong></label>
         <div class="campo-pix-copiar">
           <input type="text" id="chave-pix-input" value="11 97319-0676" readonly>
-          <button onclick="copiarChavePix()" id="btn-copiar-pix">Copiar Chave</button>
+          <button type="button" onclick="copiarChavePix()" id="btn-copiar-pix">Copiar Chave</button>
         </div>
         <small id="status-copia" style="color: #0f9d58; font-weight: bold; display: none;">Chave copiada com sucesso!</small>
       </div>
@@ -153,8 +151,8 @@
 
   <footer>
     <div class="container footer-content">
-      <p>© 2026 Plataforma de Adoção de Animais - ONG Pancinha Feliz da Lili | Projeto Integrador II (Univesp)</p>
-      <p><small><a href="admin.html" style="color: #64748b; text-decoration: none;">🔒 Área Restrita (Painel Admin)</a></small></p>
+      <p>© 2026 Plataforma de Adoção de Animais - ONG Pancinha Feliz da Lili | PI2 Univesp</p>
+      <p><small><a href="admin.html" class="link-admin">🔒 Área Restrita (Painel Admin)</a></small></p>
     </div>
   </footer>
 

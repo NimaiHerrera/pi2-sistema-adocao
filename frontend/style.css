@@ -1,3 +1,6 @@
+/* ==========================================================================
+   1. RESET E ESTILOS BASE
+   ========================================================================== */
 * {
   margin: 0;
   padding: 0;
@@ -17,13 +20,19 @@ body {
   padding: 0 20px;
 }
 
-/* HERO HEADER */
+/* ==========================================================================
+   2. HERO HEADER (INSTITUCIONAL & ADMIN)
+   ========================================================================== */
 .hero-header {
   background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   color: white;
   padding: 45px 0;
   text-align: center;
   box-shadow: 0 4px 20px rgba(5, 150, 105, 0.2);
+}
+
+.hero-header.admin-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
 .badge-ong {
@@ -50,7 +59,17 @@ body {
   margin: 0 auto;
 }
 
-/* REDES SOCIAIS */
+.link-voltar {
+  color: white;
+  font-weight: bold;
+  text-decoration: underline;
+  display: inline-block;
+  margin-top: 15px;
+}
+
+/* ==========================================================================
+   3. BOTÕES E REDES SOCIAIS
+   ========================================================================== */
 .redes-sociais {
   margin-top: 22px;
   display: flex;
@@ -70,6 +89,8 @@ body {
   align-items: center;
   gap: 6px;
   color: white;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-rede:hover {
@@ -80,9 +101,10 @@ body {
 .btn-rede.instagram { background-color: #e1306c; }
 .btn-rede.facebook { background-color: #1877f2; }
 .btn-rede.apoio { background-color: #059669; border: 1.5px solid rgba(255,255,255,0.4); }
-.btn-rede.admin { background-color: #334155; }
 
-/* CONTROLES E VITRINE */
+/* ==========================================================================
+   4. VITRINE & BARRA DE FERRAMENTAS
+   ========================================================================== */
 .controles-vitrine {
   margin: 40px 0 25px 0;
 }
@@ -141,7 +163,9 @@ body {
   border-color: #10b981;
 }
 
-/* CARDS DOS PETS */
+/* ==========================================================================
+   5. CARDS DE ANIMAIS
+   ========================================================================== */
 .grid-animais {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -164,10 +188,31 @@ body {
   box-shadow: 0 8px 25px rgba(0,0,0,0.1);
 }
 
-.card-animal img {
+.card-imagem-container {
+  position: relative;
   width: 100%;
   height: 200px;
+  overflow: hidden;
+}
+
+.card-imagem-container img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+}
+
+.badge-especie {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(15, 23, 42, 0.75);
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  z-index: 2;
 }
 
 .card-corpo {
@@ -217,7 +262,9 @@ body {
   background-color: #d97706;
 }
 
-/* FORMULÁRIO */
+/* ==========================================================================
+   6. FORMULÁRIOS (PÚBLICO E ADMIN)
+   ========================================================================== */
 .secao-form {
   background: white;
   padding: 30px;
@@ -279,54 +326,144 @@ body {
   cursor: pointer;
 }
 
-footer {
-  text-align: center;
-  padding: 25px 0;
-  color: #94a3b8;
+/* Formulário do Painel Admin */
+.admin-container { margin-top: 30px; }
+
+.form-admin-card {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.subtitulo-secao {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.form-grid-admin {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.form-grid-admin input,
+.form-grid-admin select,
+.form-grid-admin textarea {
+  width: 100%;
+  padding: 8px 12px;
+  margin-top: 4px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.upload-container {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.input-file-hidden { display: none; }
+
+.btn-upload {
+  background: #0284c7;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label-arquivo {
+  color: #64748b;
   font-size: 0.85rem;
-  border-top: 1px solid #e2e8f0;
 }
 
-footer p {
-  margin-bottom: 5px;
-}
+.container-preview { margin-top: 12px; }
 
-footer a:hover {
-  text-decoration: underline !important;
-  color: #94a3b8 !important;
-}
-
-/* CONTAINER DA IMAGEM E BADGE FLUTUANTE */
-.card-imagem-container {
-  position: relative;
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-}
-
-.card-imagem-container img {
-  width: 100%;
-  height: 100%;
+.container-preview img {
+  max-width: 180px;
+  max-height: 180px;
+  border-radius: 8px;
+  border: 2px solid #cbd5e1;
   object-fit: cover;
 }
 
-/* ETIQUETA DA ESPÉCIE (CÃO / GATO) */
-.badge-especie {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background-color: rgba(15, 23, 42, 0.75);
-  color: #ffffff;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  backdrop-filter: blur(4px);
-  z-index: 2;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+.checkboxes-grid {
+  display: flex;
+  gap: 25px;
+  margin-top: 10px;
 }
 
-/* ESTILOS DO MODAL PIX */
+.btn-submit-cadastrar {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 1rem;
+}
+
+/* ==========================================================================
+   7. TABELAS ADMINISTRATIVAS
+   ========================================================================== */
+.secao-tabela { margin-top: 40px; }
+.secao-tabela.espaco-inferior { margin-bottom: 50px; }
+
+.tabela-admin {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tabela-admin th,
+.tabela-admin td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.tabela-admin th {
+  background-color: #0f172a;
+  color: white;
+}
+
+.texto-loading {
+  text-align: center;
+  color: #64748b;
+  padding: 20px 0;
+}
+
+.btn-acao {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-aprovar { background-color: #22c55e; color: white; }
+.btn-recusar { background-color: #ef4444; color: white; }
+.btn-remover { background-color: #dc2626; color: white; }
+
+/* ==========================================================================
+   8. MODAL PIX DE APOIO
+   ========================================================================== */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -364,9 +501,7 @@ footer a:hover {
   cursor: pointer;
 }
 
-.pix-qr-container {
-  margin: 20px 0;
-}
+.pix-qr-container { margin: 20px 0; }
 
 .pix-qr-container img {
   border: 2px solid #e2e8f0;
@@ -408,6 +543,24 @@ footer a:hover {
   cursor: pointer;
 }
 
-.campo-pix-copiar button:hover {
-  background: #0b8043;
+/* ==========================================================================
+   9. RODAPÉ (FOOTER)
+   ========================================================================== */
+footer {
+  text-align: center;
+  padding: 25px 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+footer p { margin-bottom: 5px; }
+
+.link-admin {
+  color: #64748b;
+  text-decoration: none;
+}
+
+.link-admin:hover {
+  text-decoration: underline;
 }
