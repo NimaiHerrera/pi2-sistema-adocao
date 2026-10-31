@@ -12,12 +12,17 @@
 <body>
 
   <header class="hero-header admin-header">
-    <div class="container">
-      <h1>⚙️ Painel Administrativo da ONG</h1>
-      <p>Gestão de anúncios de pets e análise de solicitações de adoção</p>
+  <div class="container">
+    <h1>⚙️ Painel Administrativo da ONG</h1>
+    <p>Gestão de anúncios de pets e análise de solicitações de adoção</p>
+    <div style="margin-top: 15px; display: flex; gap: 15px; justify-content: center;">
       <a href="index.html" class="link-voltar">← Voltar para a Vitrine Pública</a>
+      <button onclick="efetuarLogout()" style="background: #ef4444; color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+        🚪 Sair (Logout)
+      </button>
     </div>
-  </header>
+  </div>
+</header>
 
   <main class="container admin-container">
 
@@ -97,6 +102,7 @@
     <!-- SEÇÃO 2: SOLICITAÇÕES RECEBIDAS -->
     <section class="secao-tabela">
       <h2>📩 Solicitações de Adoção Recebidas</h2>
+      <div class="tabela-responsive">    
       <table class="tabela-admin">
         <thead>
           <tr>
@@ -114,11 +120,13 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
 
     <!-- SEÇÃO 3: GESTÃO DE ANIMAIS CADASTRADOS -->
     <section class="secao-tabela espaco-inferior">
       <h2>🐾 Gerenciar Animais Cadastrados</h2>
+      <div class="tabela-responsive">
       <table class="tabela-admin">
         <thead>
           <tr>
@@ -135,6 +143,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
 
   </main>

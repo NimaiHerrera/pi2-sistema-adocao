@@ -564,3 +564,194 @@ footer p { margin-bottom: 5px; }
 .link-admin:hover {
   text-decoration: underline;
 }
+
+/* ==========================================================================
+   10. RESPONSIVIDADE E TABELAS EM DISPOSITIVOS MÓVEIS
+   ========================================================================== */
+
+/* Permite rolagem suave apenas na tabela sem quebrar o layout da página */
+.tabela-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Garante largura mínima para manter a tabela legível no celular */
+.tabela-admin {
+  min-width: 650px;
+  margin-top: 0; /* A margem agora fica no container wrapper */
+}
+
+/* Ajustes finos para celulares (telas de até 768px) */
+@media (max-width: 768px) {
+  .tabela-admin th,
+  .tabela-admin td {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+
+  /* Organiza os botões de ação na vertical quando faltar espaço */
+  .tabela-admin td:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .btn-acao {
+    width: 100%;
+    text-align: center;
+    padding: 6px 8px;
+  }
+}
+
+/* ==========================================================================
+   11. TELA DE LOGIN ADMINISTRATIVO (com Wallpaper translúcido)
+   ========================================================================== */
+.body-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  /* Imagem de fundo com gradiente escuro de sobreposição */
+  background: linear-gradient(rgba(15, 23, 42, 0.75), rgba(15, 23, 42, 0.85)),
+              url('https://images.unsplash.com/photo-1450778869180-41d0601e046e?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  z-index: 1;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.96); /* Cartão levemente translúcido */
+  padding: 35px 30px;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+.login-icones {
+  font-size: 2.2rem;
+  margin-bottom: 6px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.login-header h2 {
+  color: #0f172a;
+  font-size: 1.5rem;
+  margin-bottom: 4px;
+}
+
+.login-header p {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.alerta-erro {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.campo-login {
+  margin-bottom: 18px;
+}
+
+.campo-login label {
+  display: block;
+  font-size: 0.88rem;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.campo-login input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.campo-login input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.btn-login-submit {
+  width: 100%;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 10px;
+}
+
+.btn-login-submit:hover {
+  background-color: #059669;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 25px;
+}
+
+.link-voltar-login {
+  color: #64748b;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.link-voltar-login:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   12. WALLPAPERS DE FUNDO (Aumentada a visibilidade da imagem)
+   ========================================================================== */
+
+/* Background para a Vitrine Pública (index.html) - Gatinho */
+body {
+  min-height: 100vh;
+  background: linear-gradient(rgba(248, 250, 252, 0.75), rgba(248, 250, 252, 0.82)),
+              url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Background para o Painel Admin (admin.html) */
+body:has(.admin-container) {
+  /* Reduzida a opacidade da camada cinza (de 0.90/0.94 para 0.70/0.78) para mostrar mais a imagem de fundo */
+  background: linear-gradient(rgba(241, 245, 249, 0.70), rgba(241, 245, 249, 0.78)),
+              url('https://images.unsplash.com/photo-1576201836106-db1758fd1c97?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}

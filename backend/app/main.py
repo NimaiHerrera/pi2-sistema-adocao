@@ -26,7 +26,8 @@ app = FastAPI(
 # Configuração de CORS para permitir requisições do front-end
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Em produção, substitua pelas URLs exatas da Vercel/Netlify
+    # Em produção, substitua pelas URLs exatas da Vercel/Netlify
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -58,6 +59,11 @@ class AdotanteForm(BaseModel):
 
 class SolicitacaoStatusUpdate(BaseModel):
     status: str = Field(..., example="aprovado")
+
+
+class LoginSchema(BaseModel):
+    usuario: str = Field(..., example="admin")
+    senha: str = Field(..., example="pancinha123")
 
 
 # ==============================================================================
@@ -126,7 +132,8 @@ def obter_dados_ong(db: Session = Depends(get_db)):
 @app.get("/animais", tags=["Animais (Público)"])
 def listar_animais_disponiveis(especie: Optional[str] = None, db: Session = Depends(get_db)):
     """Lista apenas pets com status 'disponivel' para a vitrine pública."""
-    query = db.query(models.Animal).filter(models.Animal.status == "disponivel")
+    query = db.query(models.Animal).filter(
+        models.Animal.status == "disponivel")
     if especie:
         query = query.filter(models.Animal.especie.ilike(f"%{especie}%"))
     return query.all()
@@ -135,7 +142,8 @@ def listar_animais_disponiveis(especie: Optional[str] = None, db: Session = Depe
 @app.get("/animais/{animal_id}", tags=["Animais (Público)"])
 def obter_detalhes_animal(animal_id: int, db: Session = Depends(get_db)):
     """Retorna as informações completas de um pet específico pelo ID."""
-    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
+    animal = db.query(models.Animal).filter(
+        models.Animal.id == animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal não encontrado")
     return animal
@@ -154,7 +162,8 @@ def cadastrar_novo_animal(animal: AnimalBase, db: Session = Depends(get_db)):
 @app.delete("/animais/{animal_id}", tags=["Painel Administrativo"])
 def remover_animal(animal_id: int, db: Session = Depends(get_db)):
     """Remove permanentemente um pet do sistema (exclusão em cascata das solicitações vinculadas)."""
-    animal = db.query(models.Animal).filter(models.Animal.id == animal_id).first()
+    animal = db.query(models.Animal).filter(
+        models.Animal.id == animal_id).first()
     if not animal:
         raise HTTPException(status_code=404, detail="Animal não encontrado")
 
@@ -166,12 +175,15 @@ def remover_animal(animal_id: int, db: Session = Depends(get_db)):
 @app.post("/solicitacoes", status_code=status.HTTP_201_CREATED, tags=["Adoção (Público)"])
 def registrar_solicitacao_adocao(form: AdotanteForm, db: Session = Depends(get_db)):
     """Recebe o formulário público do adotante e registra a solicitação no banco."""
-    animal = db.query(models.Animal).filter(models.Animal.id == form.animal_id).first()
+    animal = db.query(models.Animal).filter(
+        models.Animal.id == form.animal_id).first()
     if not animal:
-        raise HTTPException(status_code=404, detail="O pet selecionado não existe ou não está mais disponível.")
+        raise HTTPException(
+            status_code=404, detail="O pet selecionado não existe ou não está mais disponível.")
 
     # Cadastra ou atualiza os dados do adotante pelo CPF
-    adotante = db.query(models.Adotante).filter(models.Adotante.cpf == form.cpf).first()
+    adotante = db.query(models.Adotante).filter(
+        models.Adotante.cpf == form.cpf).first()
     if not adotante:
         adotante = models.Adotante(
             nome=form.nome,
@@ -231,26 +243,69 @@ def listar_solicitacoes_adocao(db: Session = Depends(get_db)):
 
 @app.patch("/solicitacoes/{solicitacao_id}", tags=["Painel Administrativo"])
 def atualizar_status_solicitacao(
-    solicitacao_id: int, 
-    novo_status: str, 
+    solicitacao_id: int,
+    novo_status: str,
     db: Session = Depends(get_db)
 ):
     """
     Atualiza o status de uma solicitação ('aprovado' ou 'recusado').
     Ao aprovar, altera automaticamente o status do pet para 'adotado'.
     """
-    solicitacao = db.query(models.SolicitacaoAdocao).filter(models.SolicitacaoAdocao.id == solicitacao_id).first()
+    solicitacao = db.query(models.SolicitacaoAdocao).filter(
+        models.SolicitacaoAdocao.id == solicitacao_id).first()
     if not solicitacao:
-        raise HTTPException(status_code=404, detail="Solicitação não encontrada.")
+        raise HTTPException(
+            status_code=404, detail="Solicitação não encontrada.")
 
     solicitacao.status = novo_status.lower()
 
     # Fluxo automático: Se aprovado, retira o pet da vitrine pública
     if novo_status.lower() == "aprovado":
-        animal = db.query(models.Animal).filter(models.Animal.id == solicitacao.animal_id).first()
+        animal = db.query(models.Animal).filter(
+            models.Animal.id == solicitacao.animal_id).first()
         if animal:
             animal.status = "adotado"
 
     db.commit()
     db.refresh(solicitacao)
     return {"mensagem": f"Status atualizado para '{novo_status}' com sucesso!"}
+
+
+@app.delete("/solicitacoes/{solicitacao_id}", tags=["Painel Administrativo"])
+def remover_solicitacao(solicitacao_id: int, db: Session = Depends(get_db)):
+    """Remove permanentemente uma solicitação de adoção do banco de dados."""
+    solicitacao = db.query(models.SolicitacaoAdocao).filter(
+        models.SolicitacaoAdocao.id == solicitacao_id).first()
+    if not solicitacao:
+        raise HTTPException(
+            status_code=404, detail="Solicitação não encontrada.")
+
+    db.delete(solicitacao)
+    db.commit()
+    return {"mensagem": "Solicitação removida com sucesso!"}
+
+# ==============================================================================
+# ENDPOINT DE AUTENTICAÇÃO / LOGIN
+# ==============================================================================
+
+
+@app.post("/login", tags=["Autenticação"])
+def autenticar_administrador(credenciais: LoginSchema):
+    """
+    Valida o usuário e a senha do administrador da ONG.
+    """
+    # Credenciais padrão para a gestão do painel
+    USUARIO_CORRETO = "admin"
+    SENHA_CORRETA = "pancinha123"
+
+    if credenciais.usuario == USUARIO_CORRETO and credenciais.senha == SENHA_CORRETA:
+        return {
+            "autenticado": True,
+            "mensagem": "Login realizado com sucesso!",
+            "usuario": credenciais.usuario
+        }
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Usuário ou senha incorretos."
+    )

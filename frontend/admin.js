@@ -6,17 +6,28 @@
 const API_URL = "http://127.0.0.1:8001";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Controle básico de acesso via senha
-  const senha = prompt("🔒 Área Restrita. Digite a senha do Administrador:");
-  if (senha !== "pancinha123") {
-    alert("Senha incorreta! Redirecionando para a vitrine pública...");
-    window.location.href = "index.html";
+  // Proteção da página: se não estiver logado, redireciona para login.html
+  const usuarioAutenticado = sessionStorage.getItem("admin_autenticado");
+  
+  if (usuarioAutenticado !== "true") {
+    window.location.href = "login.html";
     return;
   }
 
   carregarSolicitacoes();
   carregarAnimaisAdmin();
 });
+
+/**
+ * Função para encerrar a sessão (Logout)
+ */
+function efetuarLogout() {
+  if (confirm("Deseja realmente sair do Painel Administrativo?")) {
+    sessionStorage.removeItem("admin_autenticado");
+    sessionStorage.removeItem("admin_usuario");
+    window.location.href = "login.html";
+  }
+}
 
 /**
  * 1. Converte a imagem enviada via upload de arquivo para Base64 e exibe pré-visualização
@@ -112,18 +123,30 @@ async function carregarSolicitacoes() {
 
     solicitacoes.forEach(sol => {
       const tr = document.createElement("tr");
-      const corStatus = sol.status === 'aprovado' ? '#166534' : (sol.status === 'recusado' ? '#ef4444' : '#d97706');
+      const statusLower = sol.status.toLowerCase();
+      const corStatus = statusLower === 'aprovado' ? '#166534' : (statusLower === 'recusado' ? '#ef4444' : '#d97706');
+
+      // Se for pendente, exibe os botões de ação (Aprovar / Recusar).
+      // Se já foi finalizado (aprovado/recusado), exibe o botão de Excluir Registro.
+      let botoesAcao = "";
+      if (statusLower === 'pendente') {
+        botoesAcao = `
+          <button class="btn-acao btn-aprovar" title="Aprovar Adoção" onclick="atualizarStatus(${sol.id}, 'aprovado')">✓ Aprovar</button>
+          <button class="btn-acao btn-recusar" title="Recusar Adoção" onclick="atualizarStatus(${sol.id}, 'recusado')">✕ Recusar</button>
+        `;
+      } else {
+        botoesAcao = `
+          <button class="btn-acao btn-remover" title="Excluir Registro" onclick="removerSolicitacao(${sol.id})">🗑️ Excluir</button>
+        `;
+      }
 
       tr.innerHTML = `
         <td>${sol.id}</td>
         <td><strong>${sol.adotante.nome}</strong><br><small>CPF: ${sol.adotante.cpf}</small></td>
         <td>${sol.adotante.telefone}<br><small>CEP: ${sol.adotante.cep}</small></td>
-        <td>${sol.animal.nome} (${sol.animal.especie})</td>
+        <td>${sol.animal ? sol.animal.nome + ' (' + sol.animal.especie + ')' : 'Pet removido'}</td>
         <td><span style="font-weight: bold; color: ${corStatus}">${sol.status.toUpperCase()}</span></td>
-        <td>
-          <button class="btn-acao btn-aprovar" title="Aprovar Adoção" onclick="atualizarStatus(${sol.id}, 'aprovado')">✓ Aprovar</button>
-          <button class="btn-acao btn-recusar" title="Recusar Adoção" onclick="atualizarStatus(${sol.id}, 'recusado')">✕ Recusar</button>
-        </td>
+        <td>${botoesAcao}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -210,5 +233,27 @@ async function removerPet(id, nome) {
   } catch (error) {
     console.error("Erro na remoção:", error);
     alert("Erro ao remover o pet.");
+  }
+}
+
+/**
+ * Remove uma solicitação já finalizada do banco de dados
+ */
+async function removerSolicitacao(id) {
+  if (!confirm(`Tem certeza que deseja excluir o registro da solicitação #${id}?`)) return;
+
+  try {
+    const response = await fetch(`${API_URL}/solicitacoes/${id}`, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) throw new Error("Erro ao remover solicitação.");
+
+    const resultado = await response.json();
+    alert(resultado.mensagem);
+    carregarSolicitacoes(); // Atualiza a tabela imediatamente
+  } catch (error) {
+    console.error("Erro na remoção:", error);
+    alert("Erro ao excluir a solicitação.");
   }
 }
