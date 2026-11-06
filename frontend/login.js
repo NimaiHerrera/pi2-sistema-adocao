@@ -3,7 +3,7 @@
  * Projeto Integrador II - Univesp
  */
 
-const API_URL = "http://127.0.0.1:8001";
+const API_URL = "https://pi2-sistema-adocao.onrender.com";
 
 // Se o usuário já estiver autenticado, redireciona direto para o painel admin
 document.addEventListener("DOMContentLoaded", () => {
